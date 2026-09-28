@@ -1,0 +1,28 @@
+{
+  "product": "MOBIO",
+  "os": "GUANTA OS",
+  "version": "0.3",
+  "world": "VYRSIA",
+  "dock": ["Calls", "Messages", "BATTUTA", "MOONDO"],
+  "languages": ["en", "ar"],
+  "status": {"satellite": true, "batteryDays": 2000},
+  "forbidden": ["wifi", "cellular", "airplane_mode", "low_power_mode", "battery_percent"],
+  "satelliteStates": ["connected", "connecting", "unavailable"],
+  "features": [
+    "interactive_home",
+    "interactive_control_center",
+    "interactive_notifications",
+    "search",
+    "localized_ui",
+    "full_call_state",
+    "battery_day_state",
+    "satellite_state",
+    "animations",
+    "gestures",
+    "calls_full_flow",
+    "messages_full_flow",
+    "battuta_navigation_flow",
+    "moondo_browser_flow",
+    "persistent_app_state"
+  ]
+}
