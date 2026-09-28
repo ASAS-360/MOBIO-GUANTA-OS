@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MOBIO • GUANTA OS v0.4.1</title>
+<style>
+:root {
+  --bg:#03070b;
+  --panel:rgba(10,15,21,.90);
+  --line:#334652;
+  --text:#fff;
+  --muted:#9fb1bd;
+  --accent:#00dceb;
+}
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { margin:0; min-height:100%; background:#000; color:var(--text); font-family:Arial,Helvetica,sans-serif; }
+body { display:flex; justify-content:center; align-items:flex-start; padding:18px; }
+
+.phone {
+  width:390px;
+  height:844px;
+  max-width:100vw;
+  position:relative;
+  overflow:hidden;
+  border-radius:46px;
+  border:1px solid #657581;
+  background:
+    radial-gradient(circle at 78% 18%, rgba(0,220,235,.18), transparent 30%),
+    linear-gradient(180deg,#08121a 0%,#03070b 62%,#010203 100%);
+  box-shadow:0 26px 70px rgba(0,0,0,.68);
+}
+.status {
+  position:absolute; z-index:10; top:0; left:0; right:0; height:46px;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 16px; font-size:12px; font-weight:800;
+}
+.content {
+  position:absolute; z-index:2; top:46px; left:0; right:0; bottom:92px;
+  overflow:auto; padding:18px 18px 26px;
+}
+.header h1 { margin:0; font-size:26px; }
+.header p { margin:6px 0 18px; color:var(--muted); font-size:13px; }
+.grid {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:20px 10px; align-items:start;
+}
+.app {
+  border:0; background:transparent; color:white; padding:0; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:7px;
+  font-size:10px; font-weight:700;
+}
+.app img, .appicon {
+  width:56px; height:56px; border-radius:12px; display:block; object-fit:cover;
+  box-shadow:0 5px 16px rgba(0,0,0,.35);
+}
+.vyrsia {
+  margin-top:54px; background:var(--panel); border:1px solid var(--line);
+  border-radius:22px; padding:18px;
+}
+.vyrsia .title { font-size:22px; font-weight:900; }
+.vyrsia p { margin:7px 0; color:var(--muted); font-size:13px; }
+.vyrsia strong { font-size:13px; }
+
+.dock {
+  position:absolute; z-index:9; left:18px; right:18px; bottom:18px; height:70px;
+  display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:8px;
+  background:rgba(7,11,15,.92); border:1px solid var(--line); border-radius:22px;
+  backdrop-filter:blur(16px);
+}
+.dock button {
+  border:0; background:transparent; color:white; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:2px; font-size:9px; font-weight:700;
+}
+.dock img { width:44px; height:44px; border-radius:10px; object-fit:cover; }
+
+.card {
+  background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:18px; margin-bottom:14px;
+}
+.titlebar {
+  display:flex; align-items:center; gap:14px; margin-bottom:18px;
+}
+.titlebar img { width:64px; height:64px; border-radius:14px; }
+.titlebar h2 { margin:0; font-size:28px; }
+.note { color:var(--muted); font-size:13px; line-height:1.45; }
+.btn {
+  border:1px solid #40525f; background:#111922; color:white; border-radius:14px;
+  padding:12px 14px; font-weight:800; cursor:pointer;
+}
+.full { width:100%; }
+
+.search {
+  width:100%; border:1px solid var(--line); background:#0b1219; color:white;
+  border-radius:14px; padding:13px 14px; font-size:15px; outline:none;
+}
+.results { margin-top:12px; }
+.result {
+  width:100%; display:flex; align-items:center; gap:12px; padding:10px 12px;
+  border:1px solid var(--line); background:var(--panel); color:white; border-radius:14px; margin-bottom:8px;
+}
+.result img { width:38px; height:38px; border-radius:9px; }
+
+.overlay {
+  display:none; position:absolute; z-index:30; inset:0; background:rgba(0,0,0,.72);
+  backdrop-filter:blur(16px); align-items:center; justify-content:center; padding:24px;
+}
+.overlay.show { display:flex; }
+.callbox {
+  width:100%; background:#0a1016; border:1px solid var(--line); border-radius:26px; padding:24px; text-align:center;
+}
+.callbox h3 { font-size:28px; margin:10px 0 6px; }
+.actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:20px; }
+
+.lock {
+  height:100%; display:flex; align-items:center; justify-content:center; text-align:center;
+}
+.lock .brand { font-size:52px; font-weight:900; letter-spacing:2px; }
+.lock .clock { font-size:42px; font-weight:900; margin:26px 0 10px; }
+.lock .sub { color:var(--muted); font-size:13px; margin-bottom:20px; }
+
+@media (max-width:430px) {
+  body { padding:0; }
+  .phone { width:100vw; height:100vh; border-radius:0; border:0; }
+}
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <div class="status"><span id="time"></span><span id="sys">SAT • 2000 D</span></div>
+  <main class="content" id="content"></main>
+  <div class="dock" id="dock"></div>
+  <div class="overlay" id="overlay"></div>
+</div>
+
+<script>
+const ICONS={"Contacts":"data:image/webp;base64,UklGRmgDAABXRUJQVlA4IFwDAAAwEQCdASo4ADgAPnk2lUgkoqIhKBv6qJAPCWkAE9kfevBnxt+spJXMZ5HPu7+b4mdrLeSMtd8EXbyjGh16k9gv9aU8VZRC9NhVediaPWtNr58NQHJTKoSLo5Uw02OGn72bMwgnOFyecLBAOcENre2ioCqbDhrvN3U7tqq5EZLcqzb7dh2Ti0wi1/AgdR5mZM+4gAD+/0iHkOK0X87v/q8Lg3pBTznIbPTfeDLo2Kd6OwfI3KFcuP71lPTHxGfcg898gcMQY2c/8OjFFdZIT4O8Bj9mneEC+YIYrWllipNm84Zg+4KA1/n3ovS7F7+cP8Wok6J7BTm0QPuEWCTQGdrSN9N9gj77TcoizFuVriou2WvZvX8FOF/Bi4yvv43P2YCxz8XBMzOxTvinNsd4Olwb1tc0TVLBYusWLp5+J5NI+qq2LDGRzWfzKcr9BghLGkwMKuex1jTtltnoiTlVI9fMjMHr5sO1gEzitoZ3bVOfL///S8h26TKiG70q1LLziV1Qs538u3gmPFf+LOMtknla9Mx0VwkPQRH4kgHSgDUqHfO3+uOhIWMDrV74OynEijQoIDNt9LZi2DhO1nSZci3w0HTA0aV/TtkBjUm3LstvipXsztm21TGf4hNQe5n1HCLVO/9PIzpjmxZezpXUfoYBOl6t/9hsFWOVDFgtBRbRm6mQoO9s3/sd/Xu+W47NF3VKj9hYaRyoyzgXLF/861YbyiNMRkAAMffdCemt6xxpZgGx6VViFjNsw296mPKT/ZFZ5SDO6uNNZjz/6vP2fajHLEIdMp8vNbackpV4JI98y2i0SSfE3+RgzBRdlDYAN4b8LgnemIqsRPIYf/CyN84aTxfooZufJ/u6klN3D8ueGBNubQbSJTI6YfIm5ExuOMJ5faTwTXk6/7pyxHyxqrPUznXei/m6jVIXKhlyKhnxRz7AdVdN5+4a7mjWkSosWRT0OgiCV8/9/648fXYXSeCVzN/tYf1xNeKlUkOBmhjhZncaqJRjtIfS4MGX9UGcg44SVuh7kmqN1F6bmVJA7c7TP/sHiDOOcjV8rc1/ujyPznTKSqJn9BitKAA3ks2ryBWY3AhhndM+fV+aTb4awy4mJ4GxRInq3G7iB+4UEGXRZ+UmOsyyyd4uEAAAAA==","MAGELLAN":"data:image/webp;base64,UklGRtoCAABXRUJQVlA4IM4CAABQDgCdASo4ADgAPnk6mkmkoyKhJhVYoJAPCWkA06AOKfcGX+RX6f9GhBkR0ayrmFvfv0grTI7/t+GGB4A+euoClCdAszQDMe/g1Z4zikeGCbX93QYpSO7b9RfBu49Tw+gvzFEqXZ0VzoXhNCKtcL9s6/ZLUOtOWZLizcgA/v710pkNHHX2Qa7NmNLmd83Ur02hHTxKNqIRlXCENS7NlkHw+dhgLd/ri9IDthdMMIqsljRcrNUjUv/9j0lMq8pXMS2cIXtGLO57IpbJbiTctyHecQv7/yjOkxkK7t1Kq5w0Rb7ks/6XOm9/HYR1vWjYKl4rxrsBYMSdiShkbVEHRNQq7+inf1PNuw2/z713gWqtEXtlcHeW80WC2j1OlMSBxZy9ybkY5GZV08GNmpHXl3CVV2FNbf1g7DpLXVvJItb4LTdAa6kkCOHrYdYR3QIBg8ACJe4FKR7WgvJ28L/Z1if4UMBHVZTnJ3IgOiDT+WkJ75ObWZcoyCr+cJP4CMNoSjoJgun7QT24PkIZj2rDFwzwQKPapxL9Ws9YgCIsTD0OujXHjA7XSdMmVvQRT8Nk7PfI4xOQQp/VTM2N5zd4CXrBKoute+yfLh1D44y0J07IQacZKAIGlyzSK9lvq4SsYve65IH0z28CA6mfW5AKFAkodLGFy3tM1+w0eNJ0KekTO8em75o/PnlVmrgD6HAO3sT15d8UkTc4EL/3/TNrlIkGM7iRQ1JIty8KKHn/5KBIN+voBHGQd9i0xLr9IXpON2RGubBD9248kLqLozmW++Tfvvz/GcoaaAaq6otszokrQGtrYKz/EMR+fmYUCT8LSJ3RRmF/gDzOwtzlJu77WjiDPcDOuJ7fKPROdH5DsDu7mlzgWqfl8DSPL8XFgQpmnRd8yyrAsuCTWNuosf5NXzv7v6xi4KSb0isbC6I0nk09EP/T6lwFKCrHFKaAAAAA","SENDIE":"data:image/webp;base64,UklGRn4CAABXRUJQVlA4IHICAADwDACdASo4ADgAPnk6mUmkoyIhJBgJIJAPCWkACw+XANN5NF8j30ievMkL7vcY1BZD77gRCwzYJ2krahHAdkKZ6u61Yv0Jvh1Fclw+U1if1R/Qu58IgEZazR7YQ5G3TwuKTqEAgAgxaSwPIfgitswAAP7+9da88oFwWyapFfP+kZbPc0B2Qb18n3tk8gjpFNxKkFyeTKO6ns01FYXCvbvbYxvfOgC+s46HANJ5PkpooUuBru63xQQgBvA29WPnjASsfSDeHwG9ahyzWnUVmHfD1hW1ORaLkJtIDVp/J9YRdSoqG4k/JK9/xplgmHsrEV56F5kEbNFVVVspefbC10WropfVFt3mJtucx3Wkkv93EMX2ygZwJ73BznbGi/0GwU74QzHyDlbjxUvXHDJdjUILluD4hKvtBgSg/iFfbgzcBJ1vNlUdF7uVWq/hUk3RH+ED+7+rOwLUeOtApyP/n36P2Kn9Q3pHAXjjOhJsn2gPsduH+cN7K9Wepkcx4UDzd67hDL92cUi7oJJ9dmU/yRGwuJmS+d/hfnG+69eGD8mqGtyVc+1PtmIk6xNMKIRjFrjiQgl2VeK5O36S2Sd528b2qCTo6+bGPR0x/ZorIZmC8e5KNGkt28NUyGhhiwhGa31M+jS+dcDO4bbSm9NVAHOS4vvdS9sXruR9xbFlgEMiY3ZS5qo7+PACozizUsGr1ToRIwXwXqpTah+ZV/m0KXeM+9smBvyc8xOaDvGtoRqWftyCmRVpKIxteZCOLSNk9/92aNLX2FxPDQetPe0zmpY4yVCgowA7R9BAjVgJ16VXGxNQP+GWAtec+38ewGoR99AAAA==","ALBUM":"data:image/webp;base64,UklGRgADAABXRUJQVlA4IPQCAABQDwCdASo4ADgAPnk2lUekoyIhKhmboJAPCWwAzbPW/IeZ3Yn679+snvgAbYDzAdDr/S+Zn1i3oAdLF9pM6NmVgDrYQ+mFEokxBqo0RTYbxtuher6Tvb7YEZvoMUy3T7jRmQyV0Ry8R3vRXelPS8Wp3BmW9CiCQ8SC8kTeD2inYvltwAD+/sI+dK62iGI/vkd1+GHvjZmcDkd7zIuD0PkRyPqzQLBc6Q2IziOeoSGpvf/78Ddg5mFMLzeBNcn4IauEjq4J/bcEAhyG9/tSLs+QjZGZQw7hbgOZz/aiZrDlDTTyUyF8JWop/eF1coBAd8Ff8qnPl3t2TnmvWeyCo3qiMU58xbgDr/w6v0v94Bo8/BtfnuYxL2f4XzNXi0qv/UN49jWgRxidZNADuPErpb6/X/BIjpYigEeuw7+LmW2+dirtNklUINlf6d+2NsH+JrlPFL5surKtzwR0T7ZLUj+EC6NV3QD6qRkPFrzff9TgHqBMW6DtQ2rc/9uPFfOgM7eCUzzm40DMTRWH33VAH38U3zZcf+2RhCpX33DRlohn/pIXwbfyhbP1PPlSIMlby+/IP0WF/2IeJx69z+aD5oHPWn87DstMWt/zL5xI2Act79FYouD3Z+oqWLte7bC6c/9ikhsCRIm4TyvNxjV/l2iRRVz/Awf/Q+zEscBnylkrf0Hw4V5P8/8KEDU/gJLt+Pn/guN27Shkx5MfNHswTGIdTahYH+iW9fSMX8onSBJnbHCTUb205UcOIXcAarmULj8xD3fclkqAOiozOv2KbBp20J7FfVvOY+kgrd3yfGiQkArCzGRpYc+8ODhCtGh+qOeqPqYptDYVZNMeNJRG/ymzDDWzRwZzDbCyPoGL5rN4+xo+x6UPUZK1yHcTBhB3A0fhlIoPzGjbEHvlE/d2WxHNjdQKbAE+nXrVuWEZpwf28lf6cFfiAE1vlhi8VkfxHn3djGswf5gCMK1d42VmvIZhH/RcbgnWxqVP/dBxhtRY550AAAA=","WEATHER":"data:image/webp;base64,UklGRuwDAABXRUJQVlA4IOADAADwEgCdASo4ADgAPnk8lkiko6IhKBQKqJAPCWwAsSAhxkyWa228gu/YnOU2wH6x+or9l/Vj/ID3mea71N3oMdLP+4HpS1jja33hd9wYh0EvUnsE/yNOZ4/0q+2+2rWF+3tHDRuQ6GA6APcdYcw+qjABuD9S/B24rj6QZRxj3bYUznaXGTGtEShiaWACsGNP1MysMrme2hFU33zIrOPnseLwAP7/GnC9nX5jDsq/cX9Nm/Nzp+8I8Zxr9TP6UmeX8J/jDvjwlL633AuJp2zGgE1poR9x76yNtcbZ2/iMLijIkOBq3OgA4SE7RPt768pSoMkavIktwP0q7j/GeK1N7nCs6CXtljqbT3yqVIbfj9km/4uWQ5cUm43dYh2cmblTzIIP4zSSc04RYe2VazdfJxvCvpzFIP+UolnfStkJTVRBYa5w4zXYXIndlgHLZOqAXYmvkTIEGX55Tb/ih/cWqoeS21SXt9bLVcHkb+oJL6E+YL7gu187MEqq6I4bj6eyKeJa9jvwXqZuKvE6CQMq/XUnNffgAz4zyeiVWUX+dOxXemtek+KQgwY/ou2vNz+OSeMo72aWqL+wAw62eS2scokoYRT45pEX9G+YVcnm5N5k5VHnOfemrNw1QqR+18CXVh7kwiwj4ih1AY4PSrJtkFAGJXVLd8nkzRsrHWCoca9URMfEj47OPkbRWIm9MkiYUkrwI4Bw8qF/ZABzgikjug9/Vw6x7cgIl6nqHCFek0tIi+CAG2XZVzQdPyGa+HbcLrre1EofGLRvmAvatvtXSl2y0DvqJ/6NjLmXboJwL+5AExZBAMMpTlsCsdms8FTGQtrtwBvA0MBh64QCvgmEnSYtJ2gVdnEiHPHX+eHbIAg4XNa8rqgWUs8r7I10+QRYZai9F9a20PpLDpT8ylZdJ0b9iX0oQ9aKR0/9tTbGev3Rk/N3i+m859QzOV1Ej3iYFhP4e0/IOPJ0QyujttrJ1WMoXO+jwBT/Zl/tx/hSWjMd4dmv8wcnp8H0+1c70ukL8LfBfCAPnhZPXci0YGZ6Oi7G/bV1R8jZJksSiKUbBgIdPKPhEHOQYmdUWqNtzWkVzLC7r46XfA6eX2fhJupIlZKhja/FtpXQazDBxcZWmdj7KsQqy+Qsz7RUS1nwptvXVcTL7mIl0ds4b4cQNQSm+dDOV2gQZbmR8HknHSc5WeawW1yZjdTn0C3naXY7RhYgq/2duCVR+9pOt/LSz87ut/mWzT0W4pyMi7zytf6P9aRKp/jq1lrocDdJhtmn1oCQHJZlerLjaDjhce91fINSyfy3wVJwCX1PPQsKowRlNVwAAA==","CAMERA":"data:image/webp;base64,UklGRrgCAABXRUJQVlA4IKwCAADwDQCdASo4ADgAPnk8mkmkoyKhJAkgkA8JaQDUzqUpcBjsJnvlU+kT15ljuZzAmfL1pcT6ud/LRkVkZ3hDCUfYnk/8MMPk84hwpyRYe/EqqynEU8aWxgg11sLkjSyLlDOOZlL05xbzqXVVPVkkTN/SLvAYk9JsRyAA/v7iC8q/K7h6HF6otvW38wXPPUPTsgvHS0fvtDMR/Pka/n3CCydsqJS6BRdVhrY+arq/TWttbKiCDyMEE845Bv5ADtTRP7xP03ZUN/DZUjBkDp8JfBWk3YLDfWNXbp1eaRVO+qL/s6bUsI3ashAeJHna7Hvfq0ap61n8M1FRIPHEAU2p8twSzeKeb8Vyvqp3xSEgC/TRnN+iWcQtmW1lQgwGFJLGczab9sf65wZrzjd+HWZ08yRIF7859KekJjG/omNRrXVGOcJSLWxdEnK1e/qB4fioDKVI5MfH28CJtR7zVUEr3FN6FaTz8Xa+yHdldSIVquX411KLCRlOHmWlG92OrD07PWlueR5HkJkFjg/g4kREXfWk7eaxsiRabubR7g6wF36OfqQzO9AlnPuI2j68mlfRQcgctwmGFiNabJ1ZQhPqlXLY2lIM9tm0Fx8TX6766aCF5A11I7EdVavCo0+Kb/Uh8h4yDaUQeY1FraRBqD9xwdvGuK9Y9KUfjntb9JZk4eYIQH8kF1clFvJLylAho21ncdvcACF5X9O9jGmclyzV7/y/2lPK+Zn6lgQienOTpoh52v4i562M1dqwpHnqj88yrCD0iGRqR+GmMV8FHDEiMoV6GYzlrX+KWbKXeepOuXsd2FfziAw3v6D9asfX14ezhCL9MX1fvbkfUFgzB58D0d6f0bDYQquBll3bPhBRpj/8zStPKWJumrUSVc+KzWf8iU7XI7+to4bszC4AAAA=","Settings":"data:image/webp;base64,UklGRiIBAABXRUJQVlA4IBYBAACwBgCdASo4ADgAPnk6mEkkoyIhKhM4AJAPCWkA1QbUB3AO+pzuPMQtz/4Z9jKtpiwBj+rYu9GBSaU1hGXcaAD++jfSg09pceoxoZXMG21QR4mCFKs30FiJoDRswoL8e//0tAq6fixBBg/Wcv3Z2xQnnAORnKx6fJdyjL0W+KAf/rBPKrq7/k5JBQ80JNYrYL/6H663e90lmDbhMGQB72PGs5U5a/fznrCkMayLXuDm+CS/8YV/cs9I2Y4/ecCfaUoZh29Z6NSuNW+vJNV6q9ir1fTLtx399nzACBl/++fmuTTk5bubQfqwxI/VAYRpy12IRjGAnsllvDqjlLjVPO4kb1nnRtaIUEfBtd0lRw13h77tluAAAA==","Calls":"data:image/webp;base64,UklGRiIDAABXRUJQVlA4IBYDAAAwDgCdASo4ADgAPnk2lEikoqGhKBgMAJAPCWkA0962X5qUC+0+AGWADWTPfJh9MldRN6MYokRDlXGFasW2HQBk0fKcBMXJUuFGQhkr+W+LBPgp4RC6nBH4wuuzf3r5kogpWB4vrct/YPeC+LKqXaG55tqDLY0pqah+8AD+/uJ5/k5jAPvdxrA/edFCM32Kq/FeJX2ieaILAOHt5/10dxDN0TDIOr2odOnzfmuVRpkeMXjI1pSlziBxIKRae7QXelZ0NSp8zCW3mvWsRYCU5ok0CDs8J+65sYyG32+iYKq8U9MeHZDyG0KQJL6HcENC4B8SIYV2yiXZhNeCa/Xv30jR2Hl5XtaZPDOBplcCtW12XeAudfdVWh9ff6saVxhYT9WssrvBlqAQd+6OuYrH+D2/4nt/8EjBByMWh7XcmEJjC7BY/0fw1y2pLMjO+A+1OWHB398MOFGivuRtZLYYWOekJMJSoIPZw0tC7LkYrexcWE3k/4GSB7zbNMu36XBeKEHOl6/TSZq11bv0Mw6yOkumhxLf8Kpg+ZwTGGYWjVbiIYvo3k4TFV+xnWv/0sjv06BA70PMTLtJqfZEL+FAxJKPmWS5sc2p7EEnJ7meHqI5Grdqp46Lpk6xquGmzfgbKw18H/fi3Ty/qdlY+PL7fvbyf9J3oJ7ZkH2NgG+VCyHoDqN6w7jZRnopx7eFYxqnuHTHRb1hvwIkrna3wkqQOTK5RqewUFJJMsJ5r3o+kKkEXmcxU+HL5Lp9u7Z/41IUl5xiF4KssvICgmjTPxvNJWk4I15uXS7NOyxKjbBFe9GXDvJucQT2WkZBhZ4hC8ZliHujFrzPxB95Sq86XV55wfKHA6WMPrL60m7qCq017xSU2VARA4XbcQNee61a8ncQkt9Ei3CS0HmPcHTONdcnoVOmPVBKhmQnUzHYYzog56sikxi1OvGww5GNPgChM2p9orwCrOFH72KBnYoCSidi6S8RyHEdQZWxpbbW6yOoCLsxz5Ppd/5zb5JiVJ8An6Uq+R+xbwX+Z71WOEBJx/WdrHmIY+rkgAAA","Messages":"data:image/webp;base64,UklGRkIDAABXRUJQVlA4IDYDAADwEACdASo4ADgAPnk6l0kkoyIhJAtokA8JaQDRw3898Piq8n+vvJYiKdof6riB3h/893lr0jySplTRi9Kf8z3CCBJ1uqwBfRj6D2Z1kKItrFnsxWDT7FZzJSzVa85Es6mH6CGeDlSNg6IIYCjhti4LZ4hqg8opCGJLwDiFuD9WxfKcVI69Mg/vMfSS0kQTTgAA/v62sqlekA625Ycy7VWfh38cWbSfu/PutcK7oGG1C2nlYZwI2vfIj7nmTZ0BhHffnyK8nKs1xjKq0pLi2TnOLyVxOaw+VSMOXWzsac/Ih7ZC7GBOtDBwZOllV2QlpwKfmdrb4QrResVcnMrQAhpbKoAznB5ra1QzvOG18HChnE7JmstEC7IDf9Gi2bqwuR+YbKUAjhLD0PPUJrYF5a/JRUnFvdS6vROZLy+FFAYTm/8HQeMuBpvCzLhkc+lUSxuUU4MgYQm95dfDwxcRrLtb/5uw5WfopHGWugIPTuKsGB7R/zQm/8VG8rGBSVw2ixDAwRWyv/4OY7tsi3R6MshmnmLFftDynlPfp6vSvM/OEzP34k3QEtQTh8OfWLB9H2YKyzhRV0rxlDvUoHk9f2+iJKMSb+Y1J5S0PV8hHcicFbBvbXbgJd5Jb26Hisvwmu4UrtCPHvXX1kJTJr+k3zPa26fw9MC+lANdqnJunbI6QrYG5F0zWByWA+I0gn3HthiIbYE0lmKJegPM02hZa2sUOYWx1+UO7hn5ZeDTYxYnSCV5uQ6d1L00NixYIEaHUJWRUmiJ1Uqosz3CibWM+sbYy7+FjkTl22NWCWNuK9b997ugw9n23Zk5wSwixxdt+WX5B/0Ox0MfqqEvUY5a9ATQq2XYjvuGMDNdpaXDMoeSQ1ONHsptjUM93cdUqaF0iks8AuGvC4KntspGUR4uyqi5FK8uYdkQ3aJEYJLXZSn/7IdqJsxMfGDUNWxHwc9HLsqv8FBsq9Q8vH6LgGGQts4TG/dhMf7Lx9p0mdwSk5HDQ0gVpKpjqScE5OqKc1fs0+6g5BVl74j7owPfoNLqruP+5rPooN0nYRQ5kUNMW2BAU66/d1bFCG7vTn9uqCoYivCAP6kaAAA=","BATTUTA":"data:image/webp;base64,UklGRrwDAABXRUJQVlA4ILADAACQEgCdASo4ADgAPnk6lUikoyGhJgsQkA8JZQDQJBS/1uoXHKT7Tfn9rYNeesxrHER9JfM/4mGgB+ef9F9t3xp/8n+Q9FX0F/zPcH/Vb/lJ4rApQbrxA4lXBhiNchUwMZDtlnG72JxRum27XPl4vkPnBHJzmYLiS9edXWqvqShcnFXQcRtxO1cgLaB4ykZmuUS9dkgV8o4lW1XnwTgAAP7/KvEKLuzB2yslAPlnnV3tOroFPlzE2ksrojME6TOewR08a5K356l/z2uPX0jTJJCb0ETGsbduBBSvMZ9Zj9ydwWXdwPoO7PYqy9Y8QVKs5Ln/4XgCWzSmyin4qH1zbo4QB3IcDZ6WmH1KKyyr5LjcsYMjQ+B/98bCVGWRBQWHvI5bSlrcVa/MV4or0/kY1H51VvrQT7ZhjlRHD2ZkARfOTuhUF5cTBEfjkriv7xSZDP4SVAEaQ8X7s3gc7yQyzifFkO5X/br9lRPVSPs15ZyUjw3Y328eH4Og6whH719CC79gqQjRc7o++HljjoMQGSO9G0zvzCbMEnF9/HYaZWoHOase4df8aSeERqTsL6WLaxN259tUMyGJbyPC8fwgeD6MLQ+1UJosqv5WAAw5gAA1PykQKChouDIYHJ7Bkaw5xl6oIuR1YlqQWKN4sVoEzq8+Na2y/HWXn2L5TrtdtK+oitGwYZ2vyofbLaIoDTVH+e2ao38lQktV7iCCtmIAjszRKSJ8kYlMkJJ9N9vTPs8xgRW4IchuHxt+rbQWuYE/Dv1FtdDQsr7OzmFCNtCVR1rZNjArEDwh6N4nWrE2kl+Zsr5Lu3fnj3E9iRmsWznx4WxVoCas6kWm6NtBoemHEIfM78EI/EcseI18gTq/YWzDMt27p+Ha8pt32mf61CjWTQzuIzKDHOCjcJYijtk/h9YdYmNS+h5rehLf/M4j47H8j/lRrTAxeKzOwQUICo/+/xy913Q3Tbxsz/6N4/P6U1kaYHRZrF+rFqWw7uADHDPRIJ5wDLg/fgo9YRE376chSui9G9uLDyoMEcuYlp+djBn9hAVPuE2bXq1aZIMcONanQ3Vtp8bI44OvppfiPjKw9Dla6r73Xb4yhy++Nft4IZNWp7X2SfLfI/DfXkwpq/Ln8YeHcdsdbk1H9sHVufSlaK+pRQUUdSyw3bmZ+lvhOa87ld87FpOdSHSdul96dGT6zXreb2L608VTLiJLl/JbZglgOtjI7GNqUOkjY+R0DaeYsN2v1ZcllNj7t34jMYAAAA==","MOONDO":"data:image/webp;base64,UklGRvICAABXRUJQVlA4IOYCAAAwDgCdASo4ADgAPnkyk0akoyGhLhkscJAPCWQAxjfeAOGMXDvVXt1efD02beWHA8cKAx5ou+oz7lDgv/w/ia2eGMGU1J3VsUcv4wPCrm8BoNGzMaa5MrZ4GDrt7n8h2ICYYL2vRkmTYIdN8lX3ZnzB8PMNCcH7cA0HDAD+/OGBJhkYY3OL9xxMOAOHOQxhcqexvRj3MhZdtjIZoJ/qljpW7uEq5m/2KSSyv3YLeYFTMkbMSDEC40ghfTHaF/wURDwUePcR3vjcH397yDirR27uot5LX7mnIEA86XxncDoWKU06EmTyKjNICSugJdVuGlkp7sQyLoDIWpGjpnGl+mIt6TMtNsa0TBRS0beotUhlXkhofyqk4o3nyqNY10oWT4yos8ZWYgvgsmP3dlzd727Vccdd191IN6w+OFuaPPtxb8AvOhfOZPG5s3mKLSX7zwCyiyt5kVRinw5ag/+PrivISOPksRAN5ag2zQs+9WjfsdmdS647+BatE2yOwnNfGirgdrGYLgbVz80htI5kaQrNR2iRClAP2/yR/YIYWSp7H/CMCH9IW4tH6MXcYXFfdW5fOo/mMZqVsxqWS11JlAAXJ806nDIztvT+SmaQ+wM4n5ToJaYyKk17ZW/4NsLmPg8IhrKXtWQS2q3sEjAMTNm/NiOprs1tB9lcB2Ud/TOlm20R6P9itA+jRduJKM3h6kQo42c3pqoN23GR9+/n4/1r3+869G/gZ0ha/8Ia1ioMf3rzHo9d6x0R/e9HI0Z4WgJWJTFOQ9nZFN0GungCOjureY3GWxST9gZ4QVBlDJ01/Sq+R1zgK6gjBOOMbiZqmBCbUYvINdb5k4LUPny/hmvF7C1nvkDFYve/OS7rBjzn/pkN/LM16e+X6H5O8lmSUf++4Xd+BvK/6YvZ64M811zaWfLAbfSP+j3ewKaZLYBZBhGowYnMUEb+ZR4GCEq4g87WyzcRZYk4M2QAk500N76W1sJgAAAA"};
+
+const state={
+  screen:'lock',
+  batteryDays:2000,
+  quiet:false,
+  flashlight:false,
+  notifications:[
+    {app:'Messages',title:'New message',body:'GUANTA OS test notification'},
+    {app:'MOONDO',title:'Page ready',body:'MOONDO finished loading a page'},
+    {app:'WEATHER',title:'Forecast updated',body:'Weather data refreshed'}
+  ]
+};
+
+const topApps=['Contacts','MAGELLAN','SENDIE','ALBUM','WEATHER','CAMERA','Settings'];
+const dockApps=['Calls','Messages','BATTUTA','MOONDO'];
+
+const content=document.getElementById('content');
+const dock=document.getElementById('dock');
+const overlay=document.getElementById('overlay');
+const timeEl=document.getElementById('time');
+const sysEl=document.getElementById('sys');
+const phone=document.getElementById('phone');
+
+function tickStatus(){
+  const d=new Date();
+  timeEl.textContent=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  sysEl.textContent=`SAT • ${state.batteryDays} D`;
+}
+function icon(name,cls='appicon') {
+  return ICONS[name] ? `<img class="${cls}" src="${ICONS[name]}" alt="${name}">` : '';
+}
+function renderDock() {
+  dock.style.display='grid';
+  dock.innerHTML=dockApps.map(a=>`<button data-dock="${a}">${icon(a)}<span>${a}</span></button>`).join('');
+  dock.querySelectorAll('[data-dock]').forEach(b=>b.onclick=()=>openApp(b.dataset.dock));
+}
+function renderLock() {
+  state.screen='lock';
+  dock.style.display='none';
+  content.innerHTML=`<div class="lock">
+    <div>
+      <div class="brand">MOBIO</div>
+      <div class="sub">VYRSIA ACTIVE</div>
+      <div class="clock">${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>
+      <button class="btn" id="unlock">Unlock</button>
+    </div>
+  </div>`;
+  document.getElementById('unlock').onclick=renderHome;
+}
+function renderHome() {
+  state.screen='home';
+  content.innerHTML=`<div class="header">
+    <h1>GUANTA OS</h1>
+    <p>VYRSIA • Satellite link active</p>
+  </div>
+  <div class="grid">
+    ${topApps.map(a=>`<button class="app" data-app="${a}">${icon(a)}<span>${a.toUpperCase()}</span></button>`).join('')}
+  </div>
+  <div class="vyrsia">
+    <div class="title">VYRSIA</div>
+    <p>Connected World</p>
+    <p>Avatar Location • Central</p>
+    <strong>Satellite link active</strong>
+  </div>`;
+  renderDock();
+  content.querySelectorAll('[data-app]').forEach(b=>b.onclick=()=>openApp(b.dataset.app));
+}
+function openApp(name) {
+  state.screen='app:'+name;
+  content.innerHTML=`<div class="titlebar">${icon(name)}<div><h2>${name}</h2><div class="note">GUANTA OS</div></div></div>
+  <div class="card">
+    <b>${name}</b>
+    <p class="note">Visual module using the approved GUANTA OS icon identity.</p>
+    <button class="btn full" id="homeBtn">Home</button>
+  </div>`;
+  renderDock();
+  document.getElementById('homeBtn').onclick=renderHome;
+}
+function renderControl() {
+  state.screen='control';
+  content.innerHTML=`<div class="header"><h1>Control Center</h1><p>Satellite only • ${state.batteryDays} D</p></div>
+  <div class="card"><b>Satellite Connected</b><p class="note">Direct Satellite</p></div>
+  <div class="card"><b>Quite Mode</b><p class="note">${state.quiet?'On':'Off'}</p><button class="btn" id="quiet">Toggle</button></div>
+  <div class="card"><b>Flashlight</b><p class="note">${state.flashlight?'On':'Off'}</p><button class="btn" id="flash">Toggle</button></div>`;
+  renderDock();
+  document.getElementById('quiet').onclick=()=>{state.quiet=!state.quiet;renderControl();};
+  document.getElementById('flash').onclick=()=>{state.flashlight=!state.flashlight;renderControl();};
+}
+function renderNotifications() {
+  state.screen='notifications';
+  content.innerHTML=`<div class="header"><h1>Notifications</h1><p>GUANTA OS</p></div>`+
+  state.notifications.map(n=>`<div class="card"><b>${n.app}</b><p>${n.title}</p><p class="note">${n.body}</p></div>`).join('');
+  renderDock();
+}
+function renderSearch() {
+  state.screen='search';
+  content.innerHTML=`<div class="header"><h1>Search</h1><p>GUANTA OS</p></div>
+  <input id="q" class="search" placeholder="Search apps">
+  <div class="results" id="results"></div>`;
+  renderDock();
+  const q=document.getElementById('q'), r=document.getElementById('results');
+  const all=[...topApps,...dockApps];
+  const draw=()=>{
+    const s=q.value.toLowerCase();
+    r.innerHTML=all.filter(a=>a.toLowerCase().includes(s)).map(a=>`<button class="result" data-r="${a}">${icon(a)}<span>${a}</span></button>`).join('');
+    r.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>openApp(b.dataset.r));
+  };
+  q.oninput=draw; draw();
+}
+
+function incomingCall() {
+  overlay.innerHTML=`<div class="callbox"><div class="note">Incoming physical-phone call</div><h3>Incoming Call</h3><div class="note">VYRSIA remains active</div>
+  <div class="actions"><button class="btn" id="decline">Decline</button><button class="btn" id="accept">Accept</button></div></div>`;
+  overlay.classList.add('show');
+  document.getElementById('decline').onclick=()=>overlay.classList.remove('show');
+  document.getElementById('accept').onclick=()=>overlay.classList.remove('show');
+}
+
+let sx=0, sy=0;
+phone.addEventListener('pointerdown',e=>{sx=e.clientX;sy=e.clientY;});
+phone.addEventListener('pointerup',e=>{
+  const dx=e.clientX-sx, dy=e.clientY-sy;
+  if (sy<80 && dy>70) { sx>phone.clientWidth/2 ? renderControl() : renderNotifications(); return; }
+  if (dy<-90) { renderHome(); return; }
+  if (sx<35 && dx>90) { renderHome(); }
+});
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='/' && state.screen!=='search'){ e.preventDefault(); renderSearch(); }
+  if(e.key==='Escape') renderHome();
+  if(e.key==='c') incomingCall();
+});
+
+renderLock();
+tickStatus();
+setInterval(tickStatus,30000);
+window.GUANTA={renderHome,renderLock,renderControl,renderNotifications,renderSearch,incomingCall,state};
+</script>
+</body>
+</html>
