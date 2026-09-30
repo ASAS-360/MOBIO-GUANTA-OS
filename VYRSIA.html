@@ -542,18 +542,26 @@ parent.postMessage({type:&#x27;MOBIO_READY&#x27;},&#x27;*&#x27;);
 &lt;/script&gt;\n&lt;/body&gt;&lt;/html&gt;"></iframe></div></div>
 <div id="creator"><div class="creatorBox"><div class="creatorTitle">CREATE YOUR VYRSIA CITIZEN</div><div class="small" style="margin-top:7px">Your identity is stored locally on this device.</div><div class="field"><label>CITIZEN NAME</label><input id="citizenName" maxlength="20" value="Citizen"></div><div class="field"><label>SKIN TONE</label><div class="swatches" id="skinSwatches"></div></div><div class="field"><label>OUTFIT</label><div class="swatches" id="outfitSwatches"></div></div><button class="menuAction primary" id="startCitizen" style="margin-top:22px">ENTER VYRSIA</button></div></div><div id="pauseMenu"><div class="creatorBox"><div class="creatorTitle">VYRSIA</div><div class="small" id="pauseCitizen">Citizen</div><div class="menuList"><button class="menuAction primary" id="resumeGame">RESUME</button><button class="menuAction" id="saveNow">SAVE GAME</button><button class="menuAction" id="editCitizen">EDIT CITIZEN</button><div class="card"><b>GRAPHICS</b><div class="qualityRow" id="qualityRow"><button data-q="low">LOW</button><button data-q="medium">MEDIUM</button><button data-q="high">HIGH</button></div></div><button class="menuAction" id="weatherToggle">WEATHER: RAIN</button><button class="menuAction" id="audioToggle">AUDIO: ON</button><button class="menuAction" id="resetGame">RESET VYRSIA SAVE</button></div></div></div><div id="gamePanel"><div class="panelBox" id="panelBox"></div></div><div id="notice" class="glass"></div>
 </div>
-<script type="importmap">
-{"imports":{
-  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-}}
+
+<script>
+(function(){
+  const bootStarted=Date.now();
+  window.__VYRSIA_BOOT_OK=false;
+  function fail(msg){
+    const l=document.getElementById('loading'); if(!l||window.__VYRSIA_BOOT_OK)return;
+    l.innerHTML='<div class="brand" style="font-size:34px">VYRSIA</div><div class="sub" style="max-width:320px;text-align:center;line-height:1.7">'+msg+'</div><button id="retryBoot" style="margin-top:22px;padding:12px 20px;border-radius:14px;border:1px solid #49eaff;background:#07151c;color:#fff;font-weight:800">RETRY</button>';
+    document.getElementById('retryBoot').onclick=()=>location.reload();
+  }
+  addEventListener('error',e=>{ if(!window.__VYRSIA_BOOT_OK) fail('تعذر تشغيل محرك 3D. افتح الصفحة مباشرة في Safari وتأكد من وجود اتصال بالإنترنت.'); },true);
+  addEventListener('unhandledrejection',e=>{ if(!window.__VYRSIA_BOOT_OK) fail('تعذر تحميل محرك اللعبة. افتح الصفحة مباشرة في Safari ثم حاول مرة ثانية.'); });
+  setTimeout(()=>{if(!window.__VYRSIA_BOOT_OK)fail('استغرق تحميل محرك اللعبة وقتاً أطول من المتوقع. افتح الصفحة مباشرة في Safari واضغط RETRY.');},10000);
+})();
 </script>
 <script type="module">
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+let THREE;
+try{THREE=await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js')}catch(_e){THREE=await import('https://unpkg.com/three@0.160.0/build/three.module.js')}
 
-const gameState={money:Number(localStorage.getItem('vyrsia3d_money')||1250),xp:Number(localStorage.getItem('vyrsia3d_xp')||0),level:Number(localStorage.getItem('vyrsia3d_level')||1),reputation:Number(localStorage.getItem('vyrsia3d_rep')||0),home:localStorage.getItem('vyrsia3d_home')==='1',vehicles:JSON.parse(localStorage.getItem('vyrsia3d_vehicles')||'[]'),inventory:JSON.parse(localStorage.getItem('vyrsia3d_inventory')||'["MOBIO","Citizen ID"]'),job:localStorage.getItem('vyrsia3d_job')||'',energy:Number(localStorage.getItem('vyrsia3d_energy')||82),hunger:Number(localStorage.getItem('vyrsia3d_hunger')||74),health:Number(localStorage.getItem('vyrsia3d_health')||100),questPhase:Number(localStorage.getItem('vyrsia3d_questPhase')||0),weatherMode:localStorage.getItem('vyrsia3d_weather')||'clear',inVehicle:false,vehicleModel:localStorage.getItem('vyrsia3d_vehicleModel')||'',cameraMode:Number(localStorage.getItem('vyrsia3d_cameraMode')||0),citizenName:localStorage.getItem('vyrsia3d_name')||'Citizen',skinTone:localStorage.getItem('vyrsia3d_skin')||'#b9866f',outfitColor:localStorage.getItem('vyrsia3d_outfit')||'#10171d',creatorDone:localStorage.getItem('vyrsia3d_creator')==='1',quality:localStorage.getItem('vyrsia3d_quality')||'high',soundOn:localStorage.getItem('vyrsia3d_sound')!=='0',interior:'',worldMinutes:Number(localStorage.getItem('vyrsia3d_worldMinutes')||((new Date().getHours()*60)+new Date().getMinutes())),px:Number(localStorage.getItem('vyrsia3d_px')||0),pz:Number(localStorage.getItem('vyrsia3d_pz')||14),pyaw:Number(localStorage.getItem('vyrsia3d_pyaw')||0),carx:Number(localStorage.getItem('vyrsia3d_carx')||28),carz:Number(localStorage.getItem('vyrsia3d_carz')||4),caryaw:Number(localStorage.getItem('vyrsia3d_caryaw')||-.35),phoneNotifications:JSON.parse(localStorage.getItem('vyrsia3d_phoneNotifications')||'[]'),noraAffinity:Number(localStorage.getItem('vyrsia3d_noraAffinity')||0),storyChapter:Number(localStorage.getItem('vyrsia3d_storyChapter')||0),realAvatar:true};
+const gameState={money:Number(localStorage.getItem('vyrsia3d_money')||1250),xp:Number(localStorage.getItem('vyrsia3d_xp')||0),level:Number(localStorage.getItem('vyrsia3d_level')||1),reputation:Number(localStorage.getItem('vyrsia3d_rep')||0),home:localStorage.getItem('vyrsia3d_home')==='1',vehicles:JSON.parse(localStorage.getItem('vyrsia3d_vehicles')||'[]'),inventory:JSON.parse(localStorage.getItem('vyrsia3d_inventory')||'["MOBIO","Citizen ID"]'),job:localStorage.getItem('vyrsia3d_job')||'',energy:Number(localStorage.getItem('vyrsia3d_energy')||82),hunger:Number(localStorage.getItem('vyrsia3d_hunger')||74),health:Number(localStorage.getItem('vyrsia3d_health')||100),questPhase:Number(localStorage.getItem('vyrsia3d_questPhase')||0),weatherMode:localStorage.getItem('vyrsia3d_weather')||'clear',inVehicle:false,vehicleModel:localStorage.getItem('vyrsia3d_vehicleModel')||'',cameraMode:Number(localStorage.getItem('vyrsia3d_cameraMode')||0),citizenName:localStorage.getItem('vyrsia3d_name')||'Citizen',skinTone:localStorage.getItem('vyrsia3d_skin')||'#b9866f',outfitColor:localStorage.getItem('vyrsia3d_outfit')||'#10171d',creatorDone:localStorage.getItem('vyrsia3d_creator')==='1',quality:localStorage.getItem('vyrsia3d_quality')||(innerWidth<900?'medium':'high'),soundOn:localStorage.getItem('vyrsia3d_sound')!=='0',interior:'',worldMinutes:Number(localStorage.getItem('vyrsia3d_worldMinutes')||((new Date().getHours()*60)+new Date().getMinutes())),px:Number(localStorage.getItem('vyrsia3d_px')||0),pz:Number(localStorage.getItem('vyrsia3d_pz')||14),pyaw:Number(localStorage.getItem('vyrsia3d_pyaw')||0),carx:Number(localStorage.getItem('vyrsia3d_carx')||28),carz:Number(localStorage.getItem('vyrsia3d_carz')||4),caryaw:Number(localStorage.getItem('vyrsia3d_caryaw')||-.35),phoneNotifications:JSON.parse(localStorage.getItem('vyrsia3d_phoneNotifications')||'[]'),noraAffinity:Number(localStorage.getItem('vyrsia3d_noraAffinity')||0),storyChapter:Number(localStorage.getItem('vyrsia3d_storyChapter')||0),realAvatar:true};
 function saveGame(){localStorage.setItem('vyrsia3d_money',gameState.money);localStorage.setItem('vyrsia3d_xp',gameState.xp);localStorage.setItem('vyrsia3d_level',gameState.level);localStorage.setItem('vyrsia3d_rep',gameState.reputation);localStorage.setItem('vyrsia3d_home',gameState.home?'1':'0');localStorage.setItem('vyrsia3d_vehicles',JSON.stringify(gameState.vehicles));localStorage.setItem('vyrsia3d_inventory',JSON.stringify(gameState.inventory));localStorage.setItem('vyrsia3d_job',gameState.job);localStorage.setItem('vyrsia3d_questPhase',gameState.questPhase);localStorage.setItem('vyrsia3d_weather',gameState.weatherMode);localStorage.setItem('vyrsia3d_vehicleModel',gameState.vehicleModel||'');localStorage.setItem('vyrsia3d_cameraMode',gameState.cameraMode||0);localStorage.setItem('vyrsia3d_name',gameState.citizenName);localStorage.setItem('vyrsia3d_skin',gameState.skinTone);localStorage.setItem('vyrsia3d_outfit',gameState.outfitColor);localStorage.setItem('vyrsia3d_creator',gameState.creatorDone?'1':'0');localStorage.setItem('vyrsia3d_quality',gameState.quality);localStorage.setItem('vyrsia3d_sound',gameState.soundOn?'1':'0');localStorage.setItem('vyrsia3d_energy',gameState.energy);localStorage.setItem('vyrsia3d_hunger',gameState.hunger);localStorage.setItem('vyrsia3d_health',gameState.health);localStorage.setItem('vyrsia3d_worldMinutes',gameState.worldMinutes);localStorage.setItem('vyrsia3d_phoneNotifications',JSON.stringify(gameState.phoneNotifications.slice(-12)));localStorage.setItem('vyrsia3d_noraAffinity',gameState.noraAffinity);localStorage.setItem('vyrsia3d_storyChapter',gameState.storyChapter);if(!gameState.interior&&typeof player!=='undefined'){localStorage.setItem('vyrsia3d_px',player.position.x);localStorage.setItem('vyrsia3d_pz',player.position.z);localStorage.setItem('vyrsia3d_pyaw',player.rotation.y)}if(typeof heroCar!=='undefined'){localStorage.setItem('vyrsia3d_carx',heroCar.position.x);localStorage.setItem('vyrsia3d_carz',heroCar.position.z);localStorage.setItem('vyrsia3d_caryaw',heroCar.rotation.y)}document.getElementById('money').textContent=gameState.money.toLocaleString();syncPhone();}
 let audioCtx=null,cityGain=null,rainGain=null;
 function ensureAudio(){
@@ -599,12 +607,11 @@ addEventListener('keydown',e=>{if(e.key==='Escape'){if(pauseMenu.classList.conta
 
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x07131d);scene.fog=new THREE.FogExp2(0x07131d,.0085);
 const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.1,900);camera.position.set(0,4.5,8.5);
-const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.useLegacyLights=false;document.getElementById('scene').appendChild(renderer.domElement);
-const pmremGenerator=new THREE.PMREMGenerator(renderer);
-scene.environment=pmremGenerator.fromScene(new RoomEnvironment(renderer),.04).texture;
-pmremGenerator.dispose();
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,(innerWidth<900?1.15:1.6)));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.useLegacyLights=false;document.getElementById('scene').appendChild(renderer.domElement);
+// iPhone-safe lighting: avoid addon environment dependency.
+scene.environment=null;
 
-function applyQuality(){const q=gameState.quality;if(q==='low'){renderer.setPixelRatio(Math.min(devicePixelRatio,1));renderer.shadowMap.enabled=false;scene.fog.density=.011}else if(q==='medium'){renderer.setPixelRatio(Math.min(devicePixelRatio,1.25));renderer.shadowMap.enabled=true;scene.fog.density=.0095}else{renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.shadowMap.enabled=true;scene.fog.density=.0085}renderer.setSize(innerWidth,innerHeight)}
+function applyQuality(){const q=gameState.quality;if(q==='low'){renderer.setPixelRatio(Math.min(devicePixelRatio,1));renderer.shadowMap.enabled=false;scene.fog.density=.011}else if(q==='medium'){renderer.setPixelRatio(Math.min(devicePixelRatio,1.25));renderer.shadowMap.enabled=true;scene.fog.density=.0095}else{renderer.setPixelRatio(Math.min(devicePixelRatio,(innerWidth<900?1.15:1.6)));renderer.shadowMap.enabled=true;scene.fog.density=.0085}renderer.setSize(innerWidth,innerHeight)}
 
 
 // Lighting
@@ -1183,36 +1190,11 @@ for(const side of [-1,1]){const arm=new THREE.Group();const upper=new THREE.Mesh
 player.position.set(gameState.px,0,gameState.pz);player.rotation.y=gameState.pyaw;scene.add(player);
 let walkPhase=0;
 // High-detail animated citizen model. Procedural avatar stays available as a fallback.
-let realAvatar=null,avatarMixer=null,avatarActions=null,avatarMotion='idle';
 const proceduralAvatarParts=[...player.children];
-const gltfLoader=new GLTFLoader();
-gltfLoader.load('https://threejs.org/examples/models/gltf/Soldier.glb',gltf=>{
-  realAvatar=gltf.scene;
-  realAvatar.name='VYRSIA_REAL_CITIZEN';
-  realAvatar.scale.set(1.05,1.05,1.05);
-  realAvatar.rotation.y=Math.PI;
-  realAvatar.traverse(o=>{
-    if(o.isMesh){
-      o.castShadow=true;o.receiveShadow=true;
-      if(o.material){
-        o.material=o.material.clone();
-        if('roughness' in o.material)o.material.roughness=Math.max(.42,o.material.roughness??.55);
-        if('metalness' in o.material)o.material.metalness=Math.min(.18,o.material.metalness??.05);
-      }
-    }
-  });
-  player.add(realAvatar);
-  proceduralAvatarParts.forEach(o=>o.visible=false);
-  const a=gltf.animations||[];
-  avatarMixer=new THREE.AnimationMixer(realAvatar);
-  avatarActions={
-    idle:a[0]?avatarMixer.clipAction(a[0]):null,
-    run:a[1]?avatarMixer.clipAction(a[1]):null,
-    walk:a[3]?avatarMixer.clipAction(a[3]):null
-  };
-  Object.values(avatarActions).forEach(act=>{if(act){act.enabled=true;act.setEffectiveWeight(0);act.play()}});
-  if(avatarActions.idle)avatarActions.idle.setEffectiveWeight(1);
-},()=>{},()=>{gameState.realAvatar=false});
+// iPhone-safe avatar: the built-in articulated citizen is used directly.
+// This removes the external GLTF model dependency so the game can start reliably on Safari.
+let realAvatar=null,avatarMixer=null,avatarActions=null,avatarMotion='idle';
+gameState.realAvatar=false;
 
 function setAvatarMotion(mode){
   if(!avatarMixer||!avatarActions||avatarMotion===mode)return;
@@ -1475,6 +1457,6 @@ const clock=new THREE.Clock();let phoneSyncTimer=0;function animate(){
 }animate();
 function updateClock(){document.getElementById('clock').textContent=worldTimeText();}updateClock();setInterval(updateClock,1000);setInterval(saveGame,2500);
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
-applyQuality();updateAtmosphere();setTimeout(()=>{const l=document.getElementById('loading');l.style.opacity='0';setTimeout(()=>{l.remove();if(!gameState.creatorDone)openCreator()},550)},2100);
+applyQuality();updateAtmosphere();window.__VYRSIA_BOOT_OK=true;setTimeout(()=>{const l=document.getElementById('loading');l.style.opacity='0';setTimeout(()=>{l.remove();if(!gameState.creatorDone)openCreator()},550)},2100);
 </script>
 </body></html>
